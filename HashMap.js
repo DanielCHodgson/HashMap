@@ -1,10 +1,16 @@
 class HashMap {
-  #buckets;
+  #buckets = [];
   #loadFactor;
   #capacity;
+  #size = 0;
 
   constructor(capacity = 16, loadFactor = 0.75) {
-    this.#buckets = [];
+    this.#capacity = capacity;
+    this.#loadFactor = loadFactor;
+
+    for (let i = 0; i < this.#capacity; i++) {
+      this.#buckets.push([]);
+    }
   }
   /*
     takes two arguments: the first is a key, and the second is a value that is assigned to this key.
@@ -13,10 +19,34 @@ class HashMap {
     (e.g. Carlos is our key but it is called twice: once with value I am the old value.,
     and once with value I am the new value.. Following this logic, Carlos should contain only the latter value).
   */
-  set(key, value) {}
+  set(key, value) {
+    const index = this.hash(key) % this.#capacity;
+    this.#validateOutOfBounds(index);
+    const bucket = this.#buckets[index];
+
+    for (const entry of bucket) {
+      if (entry.key === key) {
+        entry.value = value;
+        return;
+      }
+    }
+    bucket.push({ key, value });
+    this.#size++;
+  }
 
   //takes one argument as a key and returns the value that is assigned to this key. If a key is not found, return null.
-  get(key) {}
+  get(key) {
+    const index = this.hash(key) % this.#capacity;
+    this.#validateOutOfBounds(index);
+    const bucket = this.#buckets[index];
+
+    for (const entry of bucket) {
+      if (entry.key === key) {
+        return entry.value;
+      }
+    }
+    return null;
+  }
 
   //takes a key as an argument and returns true or false based on whether or not the key is in the hash map.
   has(key) {}
@@ -80,5 +110,15 @@ class HashMap {
     h1 ^= h1 >>> 16;
 
     return h1 >>> 0;
+  }
+
+  length() {
+    return this.#size;
+  }
+
+  #validateOutOfBounds(index) {
+    if (index < 0 || index >= this.#capacity) {
+      throw new Error("Trying to access index out of bounds");
+    }
   }
 }
